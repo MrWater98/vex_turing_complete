@@ -39,7 +39,9 @@ def build():
     d.add("vector_index", "counter", 2, x=-30, y=146)
     d.add("ram_enable", "on", 1, x=-25, y=136)
 
-    # The port is placed 16 rows above its RAM, matching the game's port layout.
+    # The load/store ports sit 12/10 rows above their RAM, respectively.
+    # This is the working arrangement saved by the game and matches the
+    # bottom two ports in BisFlipper's four-port stack.
     # Keep the RAM well below the adder so the router's horizontal buses do not
     # pass through the RAM body.
     d.add(
@@ -50,7 +52,7 @@ def build():
         buffer_size=1024,
         init_data="zeroes",
         x=0,
-        y=160,
+        y=156,
     )
     d.add("vector_port", "load_port", 16, x=0, y=144)
     d.add("vector_write", "store_port", 16, x=0, y=146)
@@ -86,7 +88,7 @@ def build():
     positions = {
         "vector_index": (-30, 146),
         "ram_enable": (-25, 136),
-        "vectors": (0, 160),
+        "vectors": (0, 156),
         "vector_port": (0, 144),
         "vector_write": (0, 146),
         "split": (50, 48),
