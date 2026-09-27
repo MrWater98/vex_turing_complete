@@ -1,0 +1,12 @@
+[settings]
+name = "TCGen Adder RAM Test"
+endianness = little
+line_comments = [";", "#", "//"]
+
+[fields]
+
+[instructions]
+
+vector %a:U8(immediate), %b:U8(immediate)
+bbbbbbbb aaaaaaaa
+# Store one pair of unsigned 8-bit operands as a 16-bit RAM word.
