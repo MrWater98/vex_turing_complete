@@ -30,9 +30,9 @@ TC_LEVEL=architecture TC_SAVE_NAME=test scripts/vex-to-tc.sh examples/ripple4_ad
 
 The script writes `build/ripple4_add_tc.v` and saves the circuit under `architecture/test`. Open **Architecture → test** in Turing Complete. `TC_SCHEMATICS_DIR` points to the game's `schematics` folder; omit it on systems where the interface can find the save directory automatically. The default level is `component_factory`, and the default save name is the Verilog filename.
 
-### RAM read/write demo
+### RAM sum demo
 
-Generate the small RAM-fed adder circuit with `python3 scripts/gen_tcgen_adder_ram_demo.py`. It writes `build/tcgen_adder_ram_demo/circuit.data`. The counter connects directly to both RAM addresses and the write data; the SUM output also has an explicit enable connection. This example does not depend on an assembly program. See [RAM demo notes](docs/ram-demo.md) for the WSL installation command, the BisFlipper wiring findings, and the limits of the local simulation.
+Run `python3 scripts/gen_tcgen_adder_ram_demo.py` to build an architecture that reads RAM values `3`, `5`, and `7` and displays their sum, `15`. The RAM data comes from the included `spec.isa` and assembly program. See [RAM demo notes](docs/ram-demo.md) for the WSL installation commands and circuit details.
 
 To convert another design, pass its file and optional top module:
 
@@ -74,9 +74,9 @@ TC_LEVEL=architecture TC_SAVE_NAME=test scripts/vex-to-tc.sh examples/ripple4_ad
 
 脚本会生成 `build/ripple4_add_tc.v`，并将电路保存到 `architecture/test`。在游戏中打开 **Architecture → test**。`TC_SCHEMATICS_DIR` 指向游戏的 `schematics` 目录；如果接口能自动找到存档目录，可以省略它。默认关卡是 `component_factory`，默认存档名是 Verilog 文件名。
 
-### RAM 读写演示
+### RAM 求和演示
 
-运行 `python3 scripts/gen_tcgen_adder_ram_demo.py`，生成 `build/tcgen_adder_ram_demo/circuit.data`。counter 直接连接 RAM 的读写地址和写入数据，SUM 输出也明确接上使能脚；电路不依赖汇编程序。WSL 安装命令、BisFlipper 连线分析和本地模拟的验证范围见 [RAM 演示记录](docs/ram-demo.md)。
+运行 `python3 scripts/gen_tcgen_adder_ram_demo.py`，生成读取 RAM 中 `3、5、7` 并显示总和 `15` 的电路。RAM 数据来自随项目提供的 `spec.isa` 和汇编程序。WSL 安装命令与电路说明见 [RAM 演示记录](docs/ram-demo.md)。
 
 转换其他设计时传入 Verilog 路径和可选的顶层模块名：
 

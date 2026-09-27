@@ -1,12 +1,10 @@
 [settings]
-name = "TCGen Adder RAM Test"
-endianness = little
+name = "RAM Sum: 3 + 5 + 7"
 line_comments = [";", "#", "//"]
 
 [fields]
 
 [instructions]
 
-vector %a:U8(immediate), %b:U8(immediate)
-bbbbbbbb aaaaaaaa
-# Store one pair of unsigned 8-bit operands as a 16-bit RAM word.
+byte %value:U8(immediate)
+vvvvvvvv
