@@ -1,0 +1,6 @@
+[settings]
+name = "RV64G"
+variant = "single-cycle, Turing Complete sandbox"
+endianness = little
+line_comments = ["#", ";", "//"]
+block_comments = {"/*":"*/"}

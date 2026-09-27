@@ -1,0 +1,31 @@
+csrrw %d(reg), %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 001 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr = rs1
+
+csrrs %d(reg), %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 010 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr |= rs1
+
+csrrc %d(reg), %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 011 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr &= ~rs1
+
+csrrwi %d(reg), %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 101 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr = zimm
+
+csrrsi %d(reg), %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 110 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr |= zimm
+
+csrrci %d(reg), %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 111 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr &= ~zimm
+
+mret
+00110000001000000000000001110011
+# [priv] return from trap: pc = mepc, MIE = MPIE
+
+wfi
+00010000010100000000000001110011
+# [priv] wait for interrupt (nop on this core)

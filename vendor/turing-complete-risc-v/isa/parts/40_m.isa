@@ -1,0 +1,51 @@
+mul %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 000 %d[4:0] 0110011
+# [M] rd = (rs1 * rs2)[63:0]
+
+mulh %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 001 %d[4:0] 0110011
+# [M] rd = (rs1 * rs2)[127:64] signed x signed
+
+mulhsu %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 010 %d[4:0] 0110011
+# [M] rd = (rs1 * rs2)[127:64] signed x unsigned
+
+mulhu %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 011 %d[4:0] 0110011
+# [M] rd = (rs1 * rs2)[127:64] unsigned x unsigned
+
+div %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 100 %d[4:0] 0110011
+# [M] rd = rs1 / rs2 signed (div by 0 -> -1, overflow -> rs1)
+
+divu %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 101 %d[4:0] 0110011
+# [M] rd = rs1 / rs2 unsigned (div by 0 -> all ones)
+
+rem %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 110 %d[4:0] 0110011
+# [M] rd = rs1 % rs2 signed (div by 0 -> rs1, overflow -> 0)
+
+remu %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 111 %d[4:0] 0110011
+# [M] rd = rs1 % rs2 unsigned (div by 0 -> rs1)
+
+mulw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 000 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] * rs2[31:0])
+
+divw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 100 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] / rs2[31:0]) signed
+
+divuw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 101 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] / rs2[31:0]) unsigned
+
+remw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 110 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] % rs2[31:0]) signed
+
+remuw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 111 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] % rs2[31:0]) unsigned

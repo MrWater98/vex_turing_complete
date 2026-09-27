@@ -1,0 +1,232 @@
+lui %d(reg), %i:U20(immediate)
+%i[19:0] %d[4:0] 0110111
+# [I] rd = sext(imm << 12)
+
+auipc %d(reg), %i:U20(immediate)
+%i[19:0] %d[4:0] 0010111
+# [I] rd = pc + sext(imm << 12)
+
+jal %d(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "jal: jump target must be 2-byte aligned")
+assert(%o >= -1048576 && %o <= 1048574, "jal: jump target out of range (+-1 MiB)")
+%o[20:20] %o[10:1] %o[11:11] %o[19:12] %d[4:0] 1101111
+# [I] rd = pc + 4; pc += offset
+
+jalr %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 000 %d[4:0] 1100111
+# [I] rd = pc + 4; pc = (rs1 + imm) & ~1
+
+jalr %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 000 %d[4:0] 1100111
+# [I] rd = pc + 4; pc = (rs1 + imm) & ~1  (register-first syntax)
+
+beq %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "beq: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "beq: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 000 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 == rs2: pc += offset
+
+bne %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bne: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bne: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 001 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 != rs2: pc += offset
+
+blt %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "blt: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "blt: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 100 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 < rs2 (signed): pc += offset
+
+bge %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bge: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bge: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 101 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 >= rs2 (signed): pc += offset
+
+bltu %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bltu: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bltu: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 110 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 < rs2 (unsigned): pc += offset
+
+bgeu %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgeu: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgeu: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 111 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 >= rs2 (unsigned): pc += offset
+
+lb %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 000 %d[4:0] 0000011
+# [I] rd = sext(mem8[rs1 + imm])
+
+lh %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 001 %d[4:0] 0000011
+# [I] rd = sext(mem16[rs1 + imm])
+
+lw %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 010 %d[4:0] 0000011
+# [I] rd = sext(mem32[rs1 + imm])
+
+ld %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 011 %d[4:0] 0000011
+# [I] rd = mem64[rs1 + imm]
+
+lbu %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 100 %d[4:0] 0000011
+# [I] rd = zext(mem8[rs1 + imm])
+
+lhu %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 101 %d[4:0] 0000011
+# [I] rd = zext(mem16[rs1 + imm])
+
+lwu %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 110 %d[4:0] 0000011
+# [I] rd = zext(mem32[rs1 + imm])
+
+sb %b(reg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 000 %i[4:0] 0100011
+# [I] mem8[rs1 + imm] = rs2[7:0]
+
+sh %b(reg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 001 %i[4:0] 0100011
+# [I] mem16[rs1 + imm] = rs2[15:0]
+
+sw %b(reg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 010 %i[4:0] 0100011
+# [I] mem32[rs1 + imm] = rs2[31:0]
+
+sd %b(reg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 011 %i[4:0] 0100011
+# [I] mem64[rs1 + imm] = rs2
+
+addi %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 000 %d[4:0] 0010011
+# [I] rd = rs1 + imm
+
+slti %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 010 %d[4:0] 0010011
+# [I] rd = (rs1 < imm) signed
+
+sltiu %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 011 %d[4:0] 0010011
+# [I] rd = (rs1 < imm) unsigned
+
+xori %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 100 %d[4:0] 0010011
+# [I] rd = rs1 ^ imm
+
+ori %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 110 %d[4:0] 0010011
+# [I] rd = rs1 | imm
+
+andi %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 111 %d[4:0] 0010011
+# [I] rd = rs1 & imm
+
+slli %d(reg), %a(reg), %s:U6(immediate)
+000000 %s[5:0] %a[4:0] 001 %d[4:0] 0010011
+# [I] rd = rs1 << shamt
+
+srli %d(reg), %a(reg), %s:U6(immediate)
+000000 %s[5:0] %a[4:0] 101 %d[4:0] 0010011
+# [I] rd = rs1 >> shamt (logical)
+
+srai %d(reg), %a(reg), %s:U6(immediate)
+010000 %s[5:0] %a[4:0] 101 %d[4:0] 0010011
+# [I] rd = rs1 >> shamt (arithmetic)
+
+add %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 000 %d[4:0] 0110011
+# [I] rd = rs1 + rs2
+
+sub %d(reg), %a(reg), %b(reg)
+0100000 %b[4:0] %a[4:0] 000 %d[4:0] 0110011
+# [I] rd = rs1 - rs2
+
+sll %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 001 %d[4:0] 0110011
+# [I] rd = rs1 << rs2[5:0]
+
+slt %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 010 %d[4:0] 0110011
+# [I] rd = (rs1 < rs2) signed
+
+sltu %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 011 %d[4:0] 0110011
+# [I] rd = (rs1 < rs2) unsigned
+
+xor %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 100 %d[4:0] 0110011
+# [I] rd = rs1 ^ rs2
+
+srl %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 101 %d[4:0] 0110011
+# [I] rd = rs1 >> rs2[5:0] (logical)
+
+sra %d(reg), %a(reg), %b(reg)
+0100000 %b[4:0] %a[4:0] 101 %d[4:0] 0110011
+# [I] rd = rs1 >> rs2[5:0] (arithmetic)
+
+or %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 110 %d[4:0] 0110011
+# [I] rd = rs1 | rs2
+
+and %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 111 %d[4:0] 0110011
+# [I] rd = rs1 & rs2
+
+addiw %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 000 %d[4:0] 0011011
+# [I] rd = sext32(rs1 + imm)
+
+slliw %d(reg), %a(reg), %s:U5(immediate)
+0000000 %s[4:0] %a[4:0] 001 %d[4:0] 0011011
+# [I] rd = sext32(rs1[31:0] << shamt)
+
+srliw %d(reg), %a(reg), %s:U5(immediate)
+0000000 %s[4:0] %a[4:0] 101 %d[4:0] 0011011
+# [I] rd = sext32(rs1[31:0] >> shamt) logical
+
+sraiw %d(reg), %a(reg), %s:U5(immediate)
+0100000 %s[4:0] %a[4:0] 101 %d[4:0] 0011011
+# [I] rd = sext32(rs1[31:0] >> shamt) arithmetic
+
+addw %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 000 %d[4:0] 0111011
+# [I] rd = sext32(rs1 + rs2)
+
+subw %d(reg), %a(reg), %b(reg)
+0100000 %b[4:0] %a[4:0] 000 %d[4:0] 0111011
+# [I] rd = sext32(rs1 - rs2)
+
+sllw %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 001 %d[4:0] 0111011
+# [I] rd = sext32(rs1[31:0] << rs2[4:0])
+
+srlw %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 101 %d[4:0] 0111011
+# [I] rd = sext32(rs1[31:0] >> rs2[4:0]) logical
+
+sraw %d(reg), %a(reg), %b(reg)
+0100000 %b[4:0] %a[4:0] 101 %d[4:0] 0111011
+# [I] rd = sext32(rs1[31:0] >> rs2[4:0]) arithmetic
+
+fence
+00001111111100000000000000001111
+# [I] memory ordering fence (nop on this core)
+
+ecall
+00000000000000000000000001110011
+# [I] environment call (trap to mtvec)
+
+ebreak
+00000000000100000000000001110011
+# [I] breakpoint (halt)

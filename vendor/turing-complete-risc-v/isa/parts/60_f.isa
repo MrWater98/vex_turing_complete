@@ -1,0 +1,187 @@
+flw %d(freg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 010 %d[4:0] 0000111
+# [F] rd = mem32[rs1 + imm] (NaN-boxed if 32-bit)
+
+fsw %b(freg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 010 %i[4:0] 0100111
+# [F] mem32[rs1 + imm] = rs2
+
+fmadd.s %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 00 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1000011
+# [F] rd = rs1 * rs2 + rs3
+
+fmadd.s %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 00 %b[4:0] %a[4:0] 111 %d[4:0] 1000011
+# [F] rd = rs1 * rs2 + rs3
+
+fmsub.s %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 00 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1000111
+# [F] rd = rs1 * rs2 - rs3
+
+fmsub.s %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 00 %b[4:0] %a[4:0] 111 %d[4:0] 1000111
+# [F] rd = rs1 * rs2 - rs3
+
+fnmsub.s %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 00 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1001011
+# [F] rd = -(rs1 * rs2) + rs3
+
+fnmsub.s %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 00 %b[4:0] %a[4:0] 111 %d[4:0] 1001011
+# [F] rd = -(rs1 * rs2) + rs3
+
+fnmadd.s %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 00 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1001111
+# [F] rd = -(rs1 * rs2) - rs3
+
+fnmadd.s %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 00 %b[4:0] %a[4:0] 111 %d[4:0] 1001111
+# [F] rd = -(rs1 * rs2) - rs3
+
+fadd.s %d(freg), %a(freg), %b(freg), %r(rm)
+0000000 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = rs1 + rs2
+
+fadd.s %d(freg), %a(freg), %b(freg)
+0000000 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = rs1 + rs2
+
+fsub.s %d(freg), %a(freg), %b(freg), %r(rm)
+0000100 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = rs1 - rs2
+
+fsub.s %d(freg), %a(freg), %b(freg)
+0000100 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = rs1 - rs2
+
+fmul.s %d(freg), %a(freg), %b(freg), %r(rm)
+0001000 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = rs1 * rs2
+
+fmul.s %d(freg), %a(freg), %b(freg)
+0001000 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = rs1 * rs2
+
+fdiv.s %d(freg), %a(freg), %b(freg), %r(rm)
+0001100 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = rs1 / rs2
+
+fdiv.s %d(freg), %a(freg), %b(freg)
+0001100 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = rs1 / rs2
+
+fsqrt.s %d(freg), %a(freg), %r(rm)
+0101100 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = sqrt(rs1)
+
+fsqrt.s %d(freg), %a(freg)
+0101100 00000 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = sqrt(rs1)
+
+fsgnj.s %d(freg), %a(freg), %b(freg)
+0010000 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = |rs1| with sign of rs2
+
+fsgnjn.s %d(freg), %a(freg), %b(freg)
+0010000 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [F] rd = |rs1| with inverted sign of rs2
+
+fsgnjx.s %d(freg), %a(freg), %b(freg)
+0010000 %b[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [F] rd = rs1 with sign = sign(rs1) xor sign(rs2)
+
+fmin.s %d(freg), %a(freg), %b(freg)
+0010100 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = min(rs1, rs2)
+
+fmax.s %d(freg), %a(freg), %b(freg)
+0010100 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [F] rd = max(rs1, rs2)
+
+fcvt.w.s %d(reg), %a(freg), %r(rm)
+1100000 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = int32(rs1) sign-extended
+
+fcvt.w.s %d(reg), %a(freg)
+1100000 00000 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = int32(rs1) sign-extended
+
+fcvt.wu.s %d(reg), %a(freg), %r(rm)
+1100000 00001 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = uint32(rs1) sign-extended
+
+fcvt.wu.s %d(reg), %a(freg)
+1100000 00001 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = uint32(rs1) sign-extended
+
+fcvt.l.s %d(reg), %a(freg), %r(rm)
+1100000 00010 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = int64(rs1)
+
+fcvt.l.s %d(reg), %a(freg)
+1100000 00010 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = int64(rs1)
+
+fcvt.lu.s %d(reg), %a(freg), %r(rm)
+1100000 00011 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = uint64(rs1)
+
+fcvt.lu.s %d(reg), %a(freg)
+1100000 00011 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = uint64(rs1)
+
+fcvt.s.w %d(freg), %a(reg), %r(rm)
+1101000 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = float(int32(rs1))
+
+fcvt.s.w %d(freg), %a(reg)
+1101000 00000 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = float(int32(rs1))
+
+fcvt.s.wu %d(freg), %a(reg), %r(rm)
+1101000 00001 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = float(uint32(rs1))
+
+fcvt.s.wu %d(freg), %a(reg)
+1101000 00001 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = float(uint32(rs1))
+
+fcvt.s.l %d(freg), %a(reg), %r(rm)
+1101000 00010 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = float(int64(rs1))
+
+fcvt.s.l %d(freg), %a(reg)
+1101000 00010 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = float(int64(rs1))
+
+fcvt.s.lu %d(freg), %a(reg), %r(rm)
+1101000 00011 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = float(uint64(rs1))
+
+fcvt.s.lu %d(freg), %a(reg)
+1101000 00011 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = float(uint64(rs1))
+
+feq.s %d(reg), %a(freg), %b(freg)
+1010000 %b[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [F] rd = (rs1 == rs2)
+
+flt.s %d(reg), %a(freg), %b(freg)
+1010000 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [F] rd = (rs1 < rs2)
+
+fle.s %d(reg), %a(freg), %b(freg)
+1010000 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = (rs1 <= rs2)
+
+fclass.s %d(reg), %a(freg)
+1110000 00000 %a[4:0] 001 %d[4:0] 1010011
+# [F] rd = classification mask of rs1
+
+fmv.x.w %d(reg), %a(freg)
+1110000 00000 %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = sext(rs1[31:0]) raw bits
+
+fmv.w.x %d(freg), %a(reg)
+1111000 00000 %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = NaN-box(rs1[31:0]) raw bits

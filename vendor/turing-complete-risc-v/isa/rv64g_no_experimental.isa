@@ -1,0 +1,1468 @@
+[settings]
+name = "RV64G"
+variant = "single-cycle, Turing Complete sandbox"
+endianness = little
+line_comments = ["#", ";", "//"]
+block_comments = {"/*":"*/"}
+
+[fields]
+
+reg
+x0 00000
+zero 00000
+x1 00001
+ra 00001
+x2 00010
+sp 00010
+x3 00011
+gp 00011
+x4 00100
+tp 00100
+x5 00101
+t0 00101
+x6 00110
+t1 00110
+x7 00111
+t2 00111
+x8 01000
+s0 01000
+fp 01000
+x9 01001
+s1 01001
+x10 01010
+a0 01010
+x11 01011
+a1 01011
+x12 01100
+a2 01100
+x13 01101
+a3 01101
+x14 01110
+a4 01110
+x15 01111
+a5 01111
+x16 10000
+a6 10000
+x17 10001
+a7 10001
+x18 10010
+s2 10010
+x19 10011
+s3 10011
+x20 10100
+s4 10100
+x21 10101
+s5 10101
+x22 10110
+s6 10110
+x23 10111
+s7 10111
+x24 11000
+s8 11000
+x25 11001
+s9 11001
+x26 11010
+s10 11010
+x27 11011
+s11 11011
+x28 11100
+t3 11100
+x29 11101
+t4 11101
+x30 11110
+t5 11110
+x31 11111
+t6 11111
+
+freg
+f0 00000
+ft0 00000
+f1 00001
+ft1 00001
+f2 00010
+ft2 00010
+f3 00011
+ft3 00011
+f4 00100
+ft4 00100
+f5 00101
+ft5 00101
+f6 00110
+ft6 00110
+f7 00111
+ft7 00111
+f8 01000
+fs0 01000
+f9 01001
+fs1 01001
+f10 01010
+fa0 01010
+f11 01011
+fa1 01011
+f12 01100
+fa2 01100
+f13 01101
+fa3 01101
+f14 01110
+fa4 01110
+f15 01111
+fa5 01111
+f16 10000
+fa6 10000
+f17 10001
+fa7 10001
+f18 10010
+fs2 10010
+f19 10011
+fs3 10011
+f20 10100
+fs4 10100
+f21 10101
+fs5 10101
+f22 10110
+fs6 10110
+f23 10111
+fs7 10111
+f24 11000
+fs8 11000
+f25 11001
+fs9 11001
+f26 11010
+fs10 11010
+f27 11011
+fs11 11011
+f28 11100
+ft8 11100
+f29 11101
+ft9 11101
+f30 11110
+ft10 11110
+f31 11111
+ft11 11111
+
+csr
+fflags 000000000001
+frm 000000000010
+fcsr 000000000011
+cycle 110000000000
+time 110000000001
+instret 110000000010
+mvendorid 111100010001
+marchid 111100010010
+mimpid 111100010011
+mhartid 111100010100
+mstatus 001100000000
+misa 001100000001
+mie 001100000100
+mtvec 001100000101
+mscratch 001101000000
+mepc 001101000001
+mcause 001101000010
+mtval 001101000011
+mip 001101000100
+mcycle 101100000000
+minstret 101100000010
+
+rm
+rne 000
+rtz 001
+rdn 010
+rup 011
+rmm 100
+dyn 111
+
+
+[instructions]
+
+lui %d(reg), %i:U20(immediate)
+%i[19:0] %d[4:0] 0110111
+# [I] rd = sext(imm << 12)
+
+auipc %d(reg), %i:U20(immediate)
+%i[19:0] %d[4:0] 0010111
+# [I] rd = pc + sext(imm << 12)
+
+jal %d(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "jal: jump target must be 2-byte aligned")
+assert(%o >= -1048576 && %o <= 1048574, "jal: jump target out of range (+-1 MiB)")
+%o[20:20] %o[10:1] %o[11:11] %o[19:12] %d[4:0] 1101111
+# [I] rd = pc + 4; pc += offset
+
+jalr %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 000 %d[4:0] 1100111
+# [I] rd = pc + 4; pc = (rs1 + imm) & ~1
+
+jalr %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 000 %d[4:0] 1100111
+# [I] rd = pc + 4; pc = (rs1 + imm) & ~1  (register-first syntax)
+
+beq %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "beq: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "beq: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 000 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 == rs2: pc += offset
+
+bne %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bne: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bne: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 001 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 != rs2: pc += offset
+
+blt %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "blt: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "blt: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 100 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 < rs2 (signed): pc += offset
+
+bge %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bge: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bge: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 101 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 >= rs2 (signed): pc += offset
+
+bltu %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bltu: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bltu: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 110 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 < rs2 (unsigned): pc += offset
+
+bgeu %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgeu: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgeu: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] %a[4:0] 111 %o[4:1] %o[11:11] 1100011
+# [I] if rs1 >= rs2 (unsigned): pc += offset
+
+lb %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 000 %d[4:0] 0000011
+# [I] rd = sext(mem8[rs1 + imm])
+
+lh %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 001 %d[4:0] 0000011
+# [I] rd = sext(mem16[rs1 + imm])
+
+lw %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 010 %d[4:0] 0000011
+# [I] rd = sext(mem32[rs1 + imm])
+
+ld %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 011 %d[4:0] 0000011
+# [I] rd = mem64[rs1 + imm]
+
+lbu %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 100 %d[4:0] 0000011
+# [I] rd = zext(mem8[rs1 + imm])
+
+lhu %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 101 %d[4:0] 0000011
+# [I] rd = zext(mem16[rs1 + imm])
+
+lwu %d(reg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 110 %d[4:0] 0000011
+# [I] rd = zext(mem32[rs1 + imm])
+
+sb %b(reg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 000 %i[4:0] 0100011
+# [I] mem8[rs1 + imm] = rs2[7:0]
+
+sh %b(reg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 001 %i[4:0] 0100011
+# [I] mem16[rs1 + imm] = rs2[15:0]
+
+sw %b(reg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 010 %i[4:0] 0100011
+# [I] mem32[rs1 + imm] = rs2[31:0]
+
+sd %b(reg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 011 %i[4:0] 0100011
+# [I] mem64[rs1 + imm] = rs2
+
+addi %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 000 %d[4:0] 0010011
+# [I] rd = rs1 + imm
+
+slti %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 010 %d[4:0] 0010011
+# [I] rd = (rs1 < imm) signed
+
+sltiu %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 011 %d[4:0] 0010011
+# [I] rd = (rs1 < imm) unsigned
+
+xori %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 100 %d[4:0] 0010011
+# [I] rd = rs1 ^ imm
+
+ori %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 110 %d[4:0] 0010011
+# [I] rd = rs1 | imm
+
+andi %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 111 %d[4:0] 0010011
+# [I] rd = rs1 & imm
+
+slli %d(reg), %a(reg), %s:U6(immediate)
+000000 %s[5:0] %a[4:0] 001 %d[4:0] 0010011
+# [I] rd = rs1 << shamt
+
+srli %d(reg), %a(reg), %s:U6(immediate)
+000000 %s[5:0] %a[4:0] 101 %d[4:0] 0010011
+# [I] rd = rs1 >> shamt (logical)
+
+srai %d(reg), %a(reg), %s:U6(immediate)
+010000 %s[5:0] %a[4:0] 101 %d[4:0] 0010011
+# [I] rd = rs1 >> shamt (arithmetic)
+
+add %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 000 %d[4:0] 0110011
+# [I] rd = rs1 + rs2
+
+sub %d(reg), %a(reg), %b(reg)
+0100000 %b[4:0] %a[4:0] 000 %d[4:0] 0110011
+# [I] rd = rs1 - rs2
+
+sll %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 001 %d[4:0] 0110011
+# [I] rd = rs1 << rs2[5:0]
+
+slt %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 010 %d[4:0] 0110011
+# [I] rd = (rs1 < rs2) signed
+
+sltu %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 011 %d[4:0] 0110011
+# [I] rd = (rs1 < rs2) unsigned
+
+xor %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 100 %d[4:0] 0110011
+# [I] rd = rs1 ^ rs2
+
+srl %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 101 %d[4:0] 0110011
+# [I] rd = rs1 >> rs2[5:0] (logical)
+
+sra %d(reg), %a(reg), %b(reg)
+0100000 %b[4:0] %a[4:0] 101 %d[4:0] 0110011
+# [I] rd = rs1 >> rs2[5:0] (arithmetic)
+
+or %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 110 %d[4:0] 0110011
+# [I] rd = rs1 | rs2
+
+and %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 111 %d[4:0] 0110011
+# [I] rd = rs1 & rs2
+
+addiw %d(reg), %a(reg), %i:S12(immediate)
+%i[11:0] %a[4:0] 000 %d[4:0] 0011011
+# [I] rd = sext32(rs1 + imm)
+
+slliw %d(reg), %a(reg), %s:U5(immediate)
+0000000 %s[4:0] %a[4:0] 001 %d[4:0] 0011011
+# [I] rd = sext32(rs1[31:0] << shamt)
+
+srliw %d(reg), %a(reg), %s:U5(immediate)
+0000000 %s[4:0] %a[4:0] 101 %d[4:0] 0011011
+# [I] rd = sext32(rs1[31:0] >> shamt) logical
+
+sraiw %d(reg), %a(reg), %s:U5(immediate)
+0100000 %s[4:0] %a[4:0] 101 %d[4:0] 0011011
+# [I] rd = sext32(rs1[31:0] >> shamt) arithmetic
+
+addw %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 000 %d[4:0] 0111011
+# [I] rd = sext32(rs1 + rs2)
+
+subw %d(reg), %a(reg), %b(reg)
+0100000 %b[4:0] %a[4:0] 000 %d[4:0] 0111011
+# [I] rd = sext32(rs1 - rs2)
+
+sllw %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 001 %d[4:0] 0111011
+# [I] rd = sext32(rs1[31:0] << rs2[4:0])
+
+srlw %d(reg), %a(reg), %b(reg)
+0000000 %b[4:0] %a[4:0] 101 %d[4:0] 0111011
+# [I] rd = sext32(rs1[31:0] >> rs2[4:0]) logical
+
+sraw %d(reg), %a(reg), %b(reg)
+0100000 %b[4:0] %a[4:0] 101 %d[4:0] 0111011
+# [I] rd = sext32(rs1[31:0] >> rs2[4:0]) arithmetic
+
+fence
+00001111111100000000000000001111
+# [I] memory ordering fence (nop on this core)
+
+ecall
+00000000000000000000000001110011
+# [I] environment call (trap to mtvec)
+
+ebreak
+00000000000100000000000001110011
+# [I] breakpoint (halt)
+
+fence.i
+00000000000000000001000000001111
+# [Zifencei] instruction-fetch fence (nop: program memory is separate)
+
+csrrw %d(reg), %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 001 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr = rs1
+
+csrrs %d(reg), %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 010 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr |= rs1
+
+csrrc %d(reg), %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 011 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr &= ~rs1
+
+csrrwi %d(reg), %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 101 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr = zimm
+
+csrrsi %d(reg), %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 110 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr |= zimm
+
+csrrci %d(reg), %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 111 %d[4:0] 1110011
+# [Zicsr] rd = csr; csr &= ~zimm
+
+mret
+00110000001000000000000001110011
+# [priv] return from trap: pc = mepc, MIE = MPIE
+
+wfi
+00010000010100000000000001110011
+# [priv] wait for interrupt (nop on this core)
+
+mul %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 000 %d[4:0] 0110011
+# [M] rd = (rs1 * rs2)[63:0]
+
+mulh %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 001 %d[4:0] 0110011
+# [M] rd = (rs1 * rs2)[127:64] signed x signed
+
+mulhsu %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 010 %d[4:0] 0110011
+# [M] rd = (rs1 * rs2)[127:64] signed x unsigned
+
+mulhu %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 011 %d[4:0] 0110011
+# [M] rd = (rs1 * rs2)[127:64] unsigned x unsigned
+
+div %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 100 %d[4:0] 0110011
+# [M] rd = rs1 / rs2 signed (div by 0 -> -1, overflow -> rs1)
+
+divu %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 101 %d[4:0] 0110011
+# [M] rd = rs1 / rs2 unsigned (div by 0 -> all ones)
+
+rem %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 110 %d[4:0] 0110011
+# [M] rd = rs1 % rs2 signed (div by 0 -> rs1, overflow -> 0)
+
+remu %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 111 %d[4:0] 0110011
+# [M] rd = rs1 % rs2 unsigned (div by 0 -> rs1)
+
+mulw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 000 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] * rs2[31:0])
+
+divw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 100 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] / rs2[31:0]) signed
+
+divuw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 101 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] / rs2[31:0]) unsigned
+
+remw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 110 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] % rs2[31:0]) signed
+
+remuw %d(reg), %a(reg), %b(reg)
+0000001 %b[4:0] %a[4:0] 111 %d[4:0] 0111011
+# [M] rd = sext32(rs1[31:0] % rs2[31:0]) unsigned
+
+lr.w %d(reg), (%a(reg))
+00010 00 00000 %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; reserve (always succeeds on this core)
+
+sc.w %d(reg), %b(reg), (%a(reg))
+00011 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] mem32[rs1] = rs2; rd = 0 (success)
+
+amoswap.w %d(reg), %b(reg), (%a(reg))
+00001 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoadd.w %d(reg), %b(reg), (%a(reg))
+00000 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoxor.w %d(reg), %b(reg), (%a(reg))
+00100 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoand.w %d(reg), %b(reg), (%a(reg))
+01100 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoor.w %d(reg), %b(reg), (%a(reg))
+01000 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomin.w %d(reg), %b(reg), (%a(reg))
+10000 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomax.w %d(reg), %b(reg), (%a(reg))
+10100 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amominu.w %d(reg), %b(reg), (%a(reg))
+11000 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomaxu.w %d(reg), %b(reg), (%a(reg))
+11100 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+lr.w.aq %d(reg), (%a(reg))
+00010 10 00000 %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; reserve (always succeeds on this core)
+
+sc.w.aq %d(reg), %b(reg), (%a(reg))
+00011 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] mem32[rs1] = rs2; rd = 0 (success)
+
+amoswap.w.aq %d(reg), %b(reg), (%a(reg))
+00001 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoadd.w.aq %d(reg), %b(reg), (%a(reg))
+00000 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoxor.w.aq %d(reg), %b(reg), (%a(reg))
+00100 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoand.w.aq %d(reg), %b(reg), (%a(reg))
+01100 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoor.w.aq %d(reg), %b(reg), (%a(reg))
+01000 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomin.w.aq %d(reg), %b(reg), (%a(reg))
+10000 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomax.w.aq %d(reg), %b(reg), (%a(reg))
+10100 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amominu.w.aq %d(reg), %b(reg), (%a(reg))
+11000 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomaxu.w.aq %d(reg), %b(reg), (%a(reg))
+11100 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+lr.w.rl %d(reg), (%a(reg))
+00010 01 00000 %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; reserve (always succeeds on this core)
+
+sc.w.rl %d(reg), %b(reg), (%a(reg))
+00011 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] mem32[rs1] = rs2; rd = 0 (success)
+
+amoswap.w.rl %d(reg), %b(reg), (%a(reg))
+00001 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoadd.w.rl %d(reg), %b(reg), (%a(reg))
+00000 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoxor.w.rl %d(reg), %b(reg), (%a(reg))
+00100 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoand.w.rl %d(reg), %b(reg), (%a(reg))
+01100 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoor.w.rl %d(reg), %b(reg), (%a(reg))
+01000 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomin.w.rl %d(reg), %b(reg), (%a(reg))
+10000 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomax.w.rl %d(reg), %b(reg), (%a(reg))
+10100 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amominu.w.rl %d(reg), %b(reg), (%a(reg))
+11000 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomaxu.w.rl %d(reg), %b(reg), (%a(reg))
+11100 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+lr.w.aqrl %d(reg), (%a(reg))
+00010 11 00000 %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; reserve (always succeeds on this core)
+
+sc.w.aqrl %d(reg), %b(reg), (%a(reg))
+00011 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] mem32[rs1] = rs2; rd = 0 (success)
+
+amoswap.w.aqrl %d(reg), %b(reg), (%a(reg))
+00001 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoadd.w.aqrl %d(reg), %b(reg), (%a(reg))
+00000 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoxor.w.aqrl %d(reg), %b(reg), (%a(reg))
+00100 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoand.w.aqrl %d(reg), %b(reg), (%a(reg))
+01100 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoor.w.aqrl %d(reg), %b(reg), (%a(reg))
+01000 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomin.w.aqrl %d(reg), %b(reg), (%a(reg))
+10000 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomax.w.aqrl %d(reg), %b(reg), (%a(reg))
+10100 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amominu.w.aqrl %d(reg), %b(reg), (%a(reg))
+11000 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomaxu.w.aqrl %d(reg), %b(reg), (%a(reg))
+11100 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+lr.d %d(reg), (%a(reg))
+00010 00 00000 %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; reserve (always succeeds on this core)
+
+sc.d %d(reg), %b(reg), (%a(reg))
+00011 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] mem64[rs1] = rs2; rd = 0 (success)
+
+amoswap.d %d(reg), %b(reg), (%a(reg))
+00001 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoadd.d %d(reg), %b(reg), (%a(reg))
+00000 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoxor.d %d(reg), %b(reg), (%a(reg))
+00100 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoand.d %d(reg), %b(reg), (%a(reg))
+01100 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoor.d %d(reg), %b(reg), (%a(reg))
+01000 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomin.d %d(reg), %b(reg), (%a(reg))
+10000 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomax.d %d(reg), %b(reg), (%a(reg))
+10100 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amominu.d %d(reg), %b(reg), (%a(reg))
+11000 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomaxu.d %d(reg), %b(reg), (%a(reg))
+11100 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+lr.d.aq %d(reg), (%a(reg))
+00010 10 00000 %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; reserve (always succeeds on this core)
+
+sc.d.aq %d(reg), %b(reg), (%a(reg))
+00011 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] mem64[rs1] = rs2; rd = 0 (success)
+
+amoswap.d.aq %d(reg), %b(reg), (%a(reg))
+00001 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoadd.d.aq %d(reg), %b(reg), (%a(reg))
+00000 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoxor.d.aq %d(reg), %b(reg), (%a(reg))
+00100 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoand.d.aq %d(reg), %b(reg), (%a(reg))
+01100 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoor.d.aq %d(reg), %b(reg), (%a(reg))
+01000 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomin.d.aq %d(reg), %b(reg), (%a(reg))
+10000 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomax.d.aq %d(reg), %b(reg), (%a(reg))
+10100 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amominu.d.aq %d(reg), %b(reg), (%a(reg))
+11000 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomaxu.d.aq %d(reg), %b(reg), (%a(reg))
+11100 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+lr.d.rl %d(reg), (%a(reg))
+00010 01 00000 %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; reserve (always succeeds on this core)
+
+sc.d.rl %d(reg), %b(reg), (%a(reg))
+00011 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] mem64[rs1] = rs2; rd = 0 (success)
+
+amoswap.d.rl %d(reg), %b(reg), (%a(reg))
+00001 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoadd.d.rl %d(reg), %b(reg), (%a(reg))
+00000 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoxor.d.rl %d(reg), %b(reg), (%a(reg))
+00100 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoand.d.rl %d(reg), %b(reg), (%a(reg))
+01100 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoor.d.rl %d(reg), %b(reg), (%a(reg))
+01000 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomin.d.rl %d(reg), %b(reg), (%a(reg))
+10000 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomax.d.rl %d(reg), %b(reg), (%a(reg))
+10100 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amominu.d.rl %d(reg), %b(reg), (%a(reg))
+11000 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomaxu.d.rl %d(reg), %b(reg), (%a(reg))
+11100 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+lr.d.aqrl %d(reg), (%a(reg))
+00010 11 00000 %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; reserve (always succeeds on this core)
+
+sc.d.aqrl %d(reg), %b(reg), (%a(reg))
+00011 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] mem64[rs1] = rs2; rd = 0 (success)
+
+amoswap.d.aqrl %d(reg), %b(reg), (%a(reg))
+00001 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoadd.d.aqrl %d(reg), %b(reg), (%a(reg))
+00000 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoxor.d.aqrl %d(reg), %b(reg), (%a(reg))
+00100 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoand.d.aqrl %d(reg), %b(reg), (%a(reg))
+01100 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoor.d.aqrl %d(reg), %b(reg), (%a(reg))
+01000 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomin.d.aqrl %d(reg), %b(reg), (%a(reg))
+10000 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomax.d.aqrl %d(reg), %b(reg), (%a(reg))
+10100 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amominu.d.aqrl %d(reg), %b(reg), (%a(reg))
+11000 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomaxu.d.aqrl %d(reg), %b(reg), (%a(reg))
+11100 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+flw %d(freg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 010 %d[4:0] 0000111
+# [F] rd = mem32[rs1 + imm] (NaN-boxed if 32-bit)
+
+fsw %b(freg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 010 %i[4:0] 0100111
+# [F] mem32[rs1 + imm] = rs2
+
+fmadd.s %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 00 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1000011
+# [F] rd = rs1 * rs2 + rs3
+
+fmadd.s %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 00 %b[4:0] %a[4:0] 111 %d[4:0] 1000011
+# [F] rd = rs1 * rs2 + rs3
+
+fmsub.s %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 00 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1000111
+# [F] rd = rs1 * rs2 - rs3
+
+fmsub.s %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 00 %b[4:0] %a[4:0] 111 %d[4:0] 1000111
+# [F] rd = rs1 * rs2 - rs3
+
+fnmsub.s %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 00 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1001011
+# [F] rd = -(rs1 * rs2) + rs3
+
+fnmsub.s %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 00 %b[4:0] %a[4:0] 111 %d[4:0] 1001011
+# [F] rd = -(rs1 * rs2) + rs3
+
+fnmadd.s %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 00 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1001111
+# [F] rd = -(rs1 * rs2) - rs3
+
+fnmadd.s %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 00 %b[4:0] %a[4:0] 111 %d[4:0] 1001111
+# [F] rd = -(rs1 * rs2) - rs3
+
+fadd.s %d(freg), %a(freg), %b(freg), %r(rm)
+0000000 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = rs1 + rs2
+
+fadd.s %d(freg), %a(freg), %b(freg)
+0000000 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = rs1 + rs2
+
+fsub.s %d(freg), %a(freg), %b(freg), %r(rm)
+0000100 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = rs1 - rs2
+
+fsub.s %d(freg), %a(freg), %b(freg)
+0000100 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = rs1 - rs2
+
+fmul.s %d(freg), %a(freg), %b(freg), %r(rm)
+0001000 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = rs1 * rs2
+
+fmul.s %d(freg), %a(freg), %b(freg)
+0001000 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = rs1 * rs2
+
+fdiv.s %d(freg), %a(freg), %b(freg), %r(rm)
+0001100 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = rs1 / rs2
+
+fdiv.s %d(freg), %a(freg), %b(freg)
+0001100 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = rs1 / rs2
+
+fsqrt.s %d(freg), %a(freg), %r(rm)
+0101100 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = sqrt(rs1)
+
+fsqrt.s %d(freg), %a(freg)
+0101100 00000 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = sqrt(rs1)
+
+fsgnj.s %d(freg), %a(freg), %b(freg)
+0010000 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = |rs1| with sign of rs2
+
+fsgnjn.s %d(freg), %a(freg), %b(freg)
+0010000 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [F] rd = |rs1| with inverted sign of rs2
+
+fsgnjx.s %d(freg), %a(freg), %b(freg)
+0010000 %b[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [F] rd = rs1 with sign = sign(rs1) xor sign(rs2)
+
+fmin.s %d(freg), %a(freg), %b(freg)
+0010100 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = min(rs1, rs2)
+
+fmax.s %d(freg), %a(freg), %b(freg)
+0010100 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [F] rd = max(rs1, rs2)
+
+fcvt.w.s %d(reg), %a(freg), %r(rm)
+1100000 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = int32(rs1) sign-extended
+
+fcvt.w.s %d(reg), %a(freg)
+1100000 00000 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = int32(rs1) sign-extended
+
+fcvt.wu.s %d(reg), %a(freg), %r(rm)
+1100000 00001 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = uint32(rs1) sign-extended
+
+fcvt.wu.s %d(reg), %a(freg)
+1100000 00001 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = uint32(rs1) sign-extended
+
+fcvt.l.s %d(reg), %a(freg), %r(rm)
+1100000 00010 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = int64(rs1)
+
+fcvt.l.s %d(reg), %a(freg)
+1100000 00010 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = int64(rs1)
+
+fcvt.lu.s %d(reg), %a(freg), %r(rm)
+1100000 00011 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = uint64(rs1)
+
+fcvt.lu.s %d(reg), %a(freg)
+1100000 00011 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = uint64(rs1)
+
+fcvt.s.w %d(freg), %a(reg), %r(rm)
+1101000 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = float(int32(rs1))
+
+fcvt.s.w %d(freg), %a(reg)
+1101000 00000 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = float(int32(rs1))
+
+fcvt.s.wu %d(freg), %a(reg), %r(rm)
+1101000 00001 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = float(uint32(rs1))
+
+fcvt.s.wu %d(freg), %a(reg)
+1101000 00001 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = float(uint32(rs1))
+
+fcvt.s.l %d(freg), %a(reg), %r(rm)
+1101000 00010 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = float(int64(rs1))
+
+fcvt.s.l %d(freg), %a(reg)
+1101000 00010 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = float(int64(rs1))
+
+fcvt.s.lu %d(freg), %a(reg), %r(rm)
+1101000 00011 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [F] rd = float(uint64(rs1))
+
+fcvt.s.lu %d(freg), %a(reg)
+1101000 00011 %a[4:0] 111 %d[4:0] 1010011
+# [F] rd = float(uint64(rs1))
+
+feq.s %d(reg), %a(freg), %b(freg)
+1010000 %b[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [F] rd = (rs1 == rs2)
+
+flt.s %d(reg), %a(freg), %b(freg)
+1010000 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [F] rd = (rs1 < rs2)
+
+fle.s %d(reg), %a(freg), %b(freg)
+1010000 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = (rs1 <= rs2)
+
+fclass.s %d(reg), %a(freg)
+1110000 00000 %a[4:0] 001 %d[4:0] 1010011
+# [F] rd = classification mask of rs1
+
+fmv.x.w %d(reg), %a(freg)
+1110000 00000 %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = sext(rs1[31:0]) raw bits
+
+fmv.w.x %d(freg), %a(reg)
+1111000 00000 %a[4:0] 000 %d[4:0] 1010011
+# [F] rd = NaN-box(rs1[31:0]) raw bits
+
+fld %d(freg), %i:S12(immediate) (%a(reg))
+%i[11:0] %a[4:0] 011 %d[4:0] 0000111
+# [D] rd = mem64[rs1 + imm] (NaN-boxed if 32-bit)
+
+fsd %b(freg), %i:S12(immediate) (%a(reg))
+%i[11:5] %b[4:0] %a[4:0] 011 %i[4:0] 0100111
+# [D] mem64[rs1 + imm] = rs2
+
+fmadd.d %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 01 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1000011
+# [D] rd = rs1 * rs2 + rs3
+
+fmadd.d %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 01 %b[4:0] %a[4:0] 111 %d[4:0] 1000011
+# [D] rd = rs1 * rs2 + rs3
+
+fmsub.d %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 01 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1000111
+# [D] rd = rs1 * rs2 - rs3
+
+fmsub.d %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 01 %b[4:0] %a[4:0] 111 %d[4:0] 1000111
+# [D] rd = rs1 * rs2 - rs3
+
+fnmsub.d %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 01 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1001011
+# [D] rd = -(rs1 * rs2) + rs3
+
+fnmsub.d %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 01 %b[4:0] %a[4:0] 111 %d[4:0] 1001011
+# [D] rd = -(rs1 * rs2) + rs3
+
+fnmadd.d %d(freg), %a(freg), %b(freg), %c(freg), %r(rm)
+%c[4:0] 01 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1001111
+# [D] rd = -(rs1 * rs2) - rs3
+
+fnmadd.d %d(freg), %a(freg), %b(freg), %c(freg)
+%c[4:0] 01 %b[4:0] %a[4:0] 111 %d[4:0] 1001111
+# [D] rd = -(rs1 * rs2) - rs3
+
+fadd.d %d(freg), %a(freg), %b(freg), %r(rm)
+0000001 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = rs1 + rs2
+
+fadd.d %d(freg), %a(freg), %b(freg)
+0000001 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = rs1 + rs2
+
+fsub.d %d(freg), %a(freg), %b(freg), %r(rm)
+0000101 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = rs1 - rs2
+
+fsub.d %d(freg), %a(freg), %b(freg)
+0000101 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = rs1 - rs2
+
+fmul.d %d(freg), %a(freg), %b(freg), %r(rm)
+0001001 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = rs1 * rs2
+
+fmul.d %d(freg), %a(freg), %b(freg)
+0001001 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = rs1 * rs2
+
+fdiv.d %d(freg), %a(freg), %b(freg), %r(rm)
+0001101 %b[4:0] %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = rs1 / rs2
+
+fdiv.d %d(freg), %a(freg), %b(freg)
+0001101 %b[4:0] %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = rs1 / rs2
+
+fsqrt.d %d(freg), %a(freg), %r(rm)
+0101101 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = sqrt(rs1)
+
+fsqrt.d %d(freg), %a(freg)
+0101101 00000 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = sqrt(rs1)
+
+fsgnj.d %d(freg), %a(freg), %b(freg)
+0010001 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [D] rd = |rs1| with sign of rs2
+
+fsgnjn.d %d(freg), %a(freg), %b(freg)
+0010001 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [D] rd = |rs1| with inverted sign of rs2
+
+fsgnjx.d %d(freg), %a(freg), %b(freg)
+0010001 %b[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [D] rd = rs1 with sign = sign(rs1) xor sign(rs2)
+
+fmin.d %d(freg), %a(freg), %b(freg)
+0010101 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [D] rd = min(rs1, rs2)
+
+fmax.d %d(freg), %a(freg), %b(freg)
+0010101 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [D] rd = max(rs1, rs2)
+
+fcvt.w.d %d(reg), %a(freg), %r(rm)
+1100001 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = int32(rs1) sign-extended
+
+fcvt.w.d %d(reg), %a(freg)
+1100001 00000 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = int32(rs1) sign-extended
+
+fcvt.wu.d %d(reg), %a(freg), %r(rm)
+1100001 00001 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = uint32(rs1) sign-extended
+
+fcvt.wu.d %d(reg), %a(freg)
+1100001 00001 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = uint32(rs1) sign-extended
+
+fcvt.l.d %d(reg), %a(freg), %r(rm)
+1100001 00010 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = int64(rs1)
+
+fcvt.l.d %d(reg), %a(freg)
+1100001 00010 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = int64(rs1)
+
+fcvt.lu.d %d(reg), %a(freg), %r(rm)
+1100001 00011 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = uint64(rs1)
+
+fcvt.lu.d %d(reg), %a(freg)
+1100001 00011 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = uint64(rs1)
+
+fcvt.d.w %d(freg), %a(reg), %r(rm)
+1101001 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = float(int32(rs1))
+
+fcvt.d.w %d(freg), %a(reg)
+1101001 00000 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = float(int32(rs1))
+
+fcvt.d.wu %d(freg), %a(reg), %r(rm)
+1101001 00001 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = float(uint32(rs1))
+
+fcvt.d.wu %d(freg), %a(reg)
+1101001 00001 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = float(uint32(rs1))
+
+fcvt.d.l %d(freg), %a(reg), %r(rm)
+1101001 00010 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = float(int64(rs1))
+
+fcvt.d.l %d(freg), %a(reg)
+1101001 00010 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = float(int64(rs1))
+
+fcvt.d.lu %d(freg), %a(reg), %r(rm)
+1101001 00011 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = float(uint64(rs1))
+
+fcvt.d.lu %d(freg), %a(reg)
+1101001 00011 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = float(uint64(rs1))
+
+feq.d %d(reg), %a(freg), %b(freg)
+1010001 %b[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [D] rd = (rs1 == rs2)
+
+flt.d %d(reg), %a(freg), %b(freg)
+1010001 %b[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [D] rd = (rs1 < rs2)
+
+fle.d %d(reg), %a(freg), %b(freg)
+1010001 %b[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [D] rd = (rs1 <= rs2)
+
+fclass.d %d(reg), %a(freg)
+1110001 00000 %a[4:0] 001 %d[4:0] 1010011
+# [D] rd = classification mask of rs1
+
+fmv.x.d %d(reg), %a(freg)
+1110001 00000 %a[4:0] 000 %d[4:0] 1010011
+# [D] rd = rs1 raw bits
+
+fmv.d.x %d(freg), %a(reg)
+1111001 00000 %a[4:0] 000 %d[4:0] 1010011
+# [D] rd = rs1 raw bits
+
+fcvt.s.d %d(freg), %a(freg), %r(rm)
+0100000 00001 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = single(rs1)
+
+fcvt.s.d %d(freg), %a(freg)
+0100000 00001 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = single(rs1)
+
+fcvt.d.s %d(freg), %a(freg), %r(rm)
+0100001 00000 %a[4:0] %r[2:0] %d[4:0] 1010011
+# [D] rd = double(rs1)
+
+fcvt.d.s %d(freg), %a(freg)
+0100001 00000 %a[4:0] 111 %d[4:0] 1010011
+# [D] rd = double(rs1)
+
+nop
+00000000000000000000000000010011
+# [pseudo] addi x0, x0, 0
+
+mv %d(reg), %a(reg)
+000000000000 %a[4:0] 000 %d[4:0] 0010011
+# [pseudo] rd = rs  (addi rd, rs, 0)
+
+not %d(reg), %a(reg)
+111111111111 %a[4:0] 100 %d[4:0] 0010011
+# [pseudo] rd = ~rs  (xori rd, rs, -1)
+
+neg %d(reg), %b(reg)
+0100000 %b[4:0] 00000 000 %d[4:0] 0110011
+# [pseudo] rd = -rs  (sub rd, x0, rs)
+
+negw %d(reg), %b(reg)
+0100000 %b[4:0] 00000 000 %d[4:0] 0111011
+# [pseudo] rd = sext32(-rs)  (subw rd, x0, rs)
+
+sext.w %d(reg), %a(reg)
+000000000000 %a[4:0] 000 %d[4:0] 0011011
+# [pseudo] rd = sext32(rs)  (addiw rd, rs, 0)
+
+seqz %d(reg), %a(reg)
+000000000001 %a[4:0] 011 %d[4:0] 0010011
+# [pseudo] rd = (rs == 0)  (sltiu rd, rs, 1)
+
+snez %d(reg), %b(reg)
+0000000 %b[4:0] 00000 011 %d[4:0] 0110011
+# [pseudo] rd = (rs != 0)  (sltu rd, x0, rs)
+
+sltz %d(reg), %a(reg)
+0000000 00000 %a[4:0] 010 %d[4:0] 0110011
+# [pseudo] rd = (rs < 0)  (slt rd, rs, x0)
+
+sgtz %d(reg), %b(reg)
+0000000 %b[4:0] 00000 010 %d[4:0] 0110011
+# [pseudo] rd = (rs > 0)  (slt rd, x0, rs)
+
+li %d(reg), %i:S12(immediate)
+%i[11:0] 00000 000 %d[4:0] 0010011
+# [pseudo] rd = imm (12-bit only; use li32 for larger values)
+
+beqz %a(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "beqz: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "beqz: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] 00000 %a[4:0] 000 %o[4:1] %o[11:11] 1100011
+# [pseudo] beq rs, x0, target
+
+bnez %a(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bnez: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bnez: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] 00000 %a[4:0] 001 %o[4:1] %o[11:11] 1100011
+# [pseudo] bne rs, x0, target
+
+blez %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "blez: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "blez: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] 00000 101 %o[4:1] %o[11:11] 1100011
+# [pseudo] bge x0, rs, target
+
+bgez %a(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgez: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgez: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] 00000 %a[4:0] 101 %o[4:1] %o[11:11] 1100011
+# [pseudo] bge rs, x0, target
+
+bltz %a(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bltz: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bltz: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] 00000 %a[4:0] 100 %o[4:1] %o[11:11] 1100011
+# [pseudo] blt rs, x0, target
+
+bgtz %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgtz: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgtz: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] 00000 100 %o[4:1] %o[11:11] 1100011
+# [pseudo] blt x0, rs, target
+
+bgt %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgt: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgt: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %a[4:0] %b[4:0] 100 %o[4:1] %o[11:11] 1100011
+# [pseudo] blt rs2, rs1, target
+
+ble %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "ble: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "ble: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %a[4:0] %b[4:0] 101 %o[4:1] %o[11:11] 1100011
+# [pseudo] bge rs2, rs1, target
+
+bgtu %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgtu: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgtu: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %a[4:0] %b[4:0] 110 %o[4:1] %o[11:11] 1100011
+# [pseudo] bltu rs2, rs1, target
+
+bleu %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bleu: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bleu: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %a[4:0] %b[4:0] 111 %o[4:1] %o[11:11] 1100011
+# [pseudo] bgeu rs2, rs1, target
+
+j %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "j: jump target must be 2-byte aligned")
+assert(%o >= -1048576 && %o <= 1048574, "j: jump target out of range (+-1 MiB)")
+%o[20:20] %o[10:1] %o[11:11] %o[19:12] 00000 1101111
+# [pseudo] jal x0, target
+
+jal %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "jal: jump target must be 2-byte aligned")
+assert(%o >= -1048576 && %o <= 1048574, "jal: jump target out of range (+-1 MiB)")
+%o[20:20] %o[10:1] %o[11:11] %o[19:12] 00001 1101111
+# [pseudo] jal x1, target
+
+jr %a(reg)
+000000000000 %a[4:0] 000 00000 1100111
+# [pseudo] jalr x0, 0(rs)
+
+jalr %a(reg)
+000000000000 %a[4:0] 000 00001 1100111
+# [pseudo] jalr x1, 0(rs)
+
+ret
+00000000000000001000000001100111
+# [pseudo] jalr x0, 0(x1)
+
+csrr %d(reg), %n:U12(csr | immediate)
+%n[11:0] 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, csr, x0
+
+csrw %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 001 00000 1110011
+# [pseudo] csrrw x0, csr, rs
+
+csrs %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 010 00000 1110011
+# [pseudo] csrrs x0, csr, rs
+
+csrc %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 011 00000 1110011
+# [pseudo] csrrc x0, csr, rs
+
+csrwi %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 101 00000 1110011
+# [pseudo] csrrwi x0, csr, zimm
+
+csrsi %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 110 00000 1110011
+# [pseudo] csrrsi x0, csr, zimm
+
+csrci %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 111 00000 1110011
+# [pseudo] csrrci x0, csr, zimm
+
+rdcycle %d(reg)
+110000000000 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, cycle, x0
+
+rdtime %d(reg)
+110000000001 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, time, x0
+
+rdinstret %d(reg)
+110000000010 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, instret, x0
+
+frcsr %d(reg)
+000000000011 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, fcsr, x0
+
+fscsr %a(reg)
+000000000011 %a[4:0] 001 00000 1110011
+# [pseudo] csrrw x0, fcsr, rs
+
+frrm %d(reg)
+000000000010 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, frm, x0
+
+fsrm %a(reg)
+000000000010 %a[4:0] 001 00000 1110011
+# [pseudo] csrrw x0, frm, rs
+
+frflags %d(reg)
+000000000001 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, fflags, x0
+
+fsflags %a(reg)
+000000000001 %a[4:0] 001 00000 1110011
+# [pseudo] csrrw x0, fflags, rs
+
+fmv.s %d(freg), %a(freg)
+0010000 %a[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [pseudo] fsgnj.s rd, rs, rs
+
+fneg.s %d(freg), %a(freg)
+0010000 %a[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [pseudo] fsgnjn.s rd, rs, rs
+
+fabs.s %d(freg), %a(freg)
+0010000 %a[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [pseudo] fsgnjx.s rd, rs, rs
+
+fmv.d %d(freg), %a(freg)
+0010001 %a[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [pseudo] fsgnj.d rd, rs, rs
+
+fneg.d %d(freg), %a(freg)
+0010001 %a[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [pseudo] fsgnjn.d rd, rs, rs
+
+fabs.d %d(freg), %a(freg)
+0010001 %a[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [pseudo] fsgnjx.d rd, rs, rs

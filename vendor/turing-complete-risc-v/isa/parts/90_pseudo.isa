@@ -1,0 +1,227 @@
+nop
+00000000000000000000000000010011
+# [pseudo] addi x0, x0, 0
+
+mv %d(reg), %a(reg)
+000000000000 %a[4:0] 000 %d[4:0] 0010011
+# [pseudo] rd = rs  (addi rd, rs, 0)
+
+not %d(reg), %a(reg)
+111111111111 %a[4:0] 100 %d[4:0] 0010011
+# [pseudo] rd = ~rs  (xori rd, rs, -1)
+
+neg %d(reg), %b(reg)
+0100000 %b[4:0] 00000 000 %d[4:0] 0110011
+# [pseudo] rd = -rs  (sub rd, x0, rs)
+
+negw %d(reg), %b(reg)
+0100000 %b[4:0] 00000 000 %d[4:0] 0111011
+# [pseudo] rd = sext32(-rs)  (subw rd, x0, rs)
+
+sext.w %d(reg), %a(reg)
+000000000000 %a[4:0] 000 %d[4:0] 0011011
+# [pseudo] rd = sext32(rs)  (addiw rd, rs, 0)
+
+seqz %d(reg), %a(reg)
+000000000001 %a[4:0] 011 %d[4:0] 0010011
+# [pseudo] rd = (rs == 0)  (sltiu rd, rs, 1)
+
+snez %d(reg), %b(reg)
+0000000 %b[4:0] 00000 011 %d[4:0] 0110011
+# [pseudo] rd = (rs != 0)  (sltu rd, x0, rs)
+
+sltz %d(reg), %a(reg)
+0000000 00000 %a[4:0] 010 %d[4:0] 0110011
+# [pseudo] rd = (rs < 0)  (slt rd, rs, x0)
+
+sgtz %d(reg), %b(reg)
+0000000 %b[4:0] 00000 010 %d[4:0] 0110011
+# [pseudo] rd = (rs > 0)  (slt rd, x0, rs)
+
+li %d(reg), %i:S12(immediate)
+%i[11:0] 00000 000 %d[4:0] 0010011
+# [pseudo] rd = imm (12-bit only; use li32 for larger values)
+
+beqz %a(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "beqz: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "beqz: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] 00000 %a[4:0] 000 %o[4:1] %o[11:11] 1100011
+# [pseudo] beq rs, x0, target
+
+bnez %a(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bnez: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bnez: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] 00000 %a[4:0] 001 %o[4:1] %o[11:11] 1100011
+# [pseudo] bne rs, x0, target
+
+blez %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "blez: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "blez: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] 00000 101 %o[4:1] %o[11:11] 1100011
+# [pseudo] bge x0, rs, target
+
+bgez %a(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgez: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgez: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] 00000 %a[4:0] 101 %o[4:1] %o[11:11] 1100011
+# [pseudo] bge rs, x0, target
+
+bltz %a(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bltz: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bltz: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] 00000 %a[4:0] 100 %o[4:1] %o[11:11] 1100011
+# [pseudo] blt rs, x0, target
+
+bgtz %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgtz: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgtz: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %b[4:0] 00000 100 %o[4:1] %o[11:11] 1100011
+# [pseudo] blt x0, rs, target
+
+bgt %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgt: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgt: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %a[4:0] %b[4:0] 100 %o[4:1] %o[11:11] 1100011
+# [pseudo] blt rs2, rs1, target
+
+ble %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "ble: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "ble: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %a[4:0] %b[4:0] 101 %o[4:1] %o[11:11] 1100011
+# [pseudo] bge rs2, rs1, target
+
+bgtu %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bgtu: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bgtu: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %a[4:0] %b[4:0] 110 %o[4:1] %o[11:11] 1100011
+# [pseudo] bltu rs2, rs1, target
+
+bleu %a(reg), %b(reg), %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "bleu: branch target must be 2-byte aligned")
+assert(%o >= -4096 && %o <= 4094, "bleu: branch target out of range (+-4 KiB)")
+%o[12:12] %o[10:5] %a[4:0] %b[4:0] 111 %o[4:1] %o[11:11] 1100011
+# [pseudo] bgeu rs2, rs1, target
+
+j %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "j: jump target must be 2-byte aligned")
+assert(%o >= -1048576 && %o <= 1048574, "j: jump target out of range (+-1 MiB)")
+%o[20:20] %o[10:1] %o[11:11] %o[19:12] 00000 1101111
+# [pseudo] jal x0, target
+
+jal %t:U32(immediate | label)
+%o = %t - $start
+assert(%o % 2 == 0, "jal: jump target must be 2-byte aligned")
+assert(%o >= -1048576 && %o <= 1048574, "jal: jump target out of range (+-1 MiB)")
+%o[20:20] %o[10:1] %o[11:11] %o[19:12] 00001 1101111
+# [pseudo] jal x1, target
+
+jr %a(reg)
+000000000000 %a[4:0] 000 00000 1100111
+# [pseudo] jalr x0, 0(rs)
+
+jalr %a(reg)
+000000000000 %a[4:0] 000 00001 1100111
+# [pseudo] jalr x1, 0(rs)
+
+ret
+00000000000000001000000001100111
+# [pseudo] jalr x0, 0(x1)
+
+csrr %d(reg), %n:U12(csr | immediate)
+%n[11:0] 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, csr, x0
+
+csrw %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 001 00000 1110011
+# [pseudo] csrrw x0, csr, rs
+
+csrs %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 010 00000 1110011
+# [pseudo] csrrs x0, csr, rs
+
+csrc %n:U12(csr | immediate), %a(reg)
+%n[11:0] %a[4:0] 011 00000 1110011
+# [pseudo] csrrc x0, csr, rs
+
+csrwi %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 101 00000 1110011
+# [pseudo] csrrwi x0, csr, zimm
+
+csrsi %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 110 00000 1110011
+# [pseudo] csrrsi x0, csr, zimm
+
+csrci %n:U12(csr | immediate), %z:U5(immediate)
+%n[11:0] %z[4:0] 111 00000 1110011
+# [pseudo] csrrci x0, csr, zimm
+
+rdcycle %d(reg)
+110000000000 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, cycle, x0
+
+rdtime %d(reg)
+110000000001 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, time, x0
+
+rdinstret %d(reg)
+110000000010 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, instret, x0
+
+frcsr %d(reg)
+000000000011 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, fcsr, x0
+
+fscsr %a(reg)
+000000000011 %a[4:0] 001 00000 1110011
+# [pseudo] csrrw x0, fcsr, rs
+
+frrm %d(reg)
+000000000010 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, frm, x0
+
+fsrm %a(reg)
+000000000010 %a[4:0] 001 00000 1110011
+# [pseudo] csrrw x0, frm, rs
+
+frflags %d(reg)
+000000000001 00000 010 %d[4:0] 1110011
+# [pseudo] csrrs rd, fflags, x0
+
+fsflags %a(reg)
+000000000001 %a[4:0] 001 00000 1110011
+# [pseudo] csrrw x0, fflags, rs
+
+fmv.s %d(freg), %a(freg)
+0010000 %a[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [pseudo] fsgnj.s rd, rs, rs
+
+fneg.s %d(freg), %a(freg)
+0010000 %a[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [pseudo] fsgnjn.s rd, rs, rs
+
+fabs.s %d(freg), %a(freg)
+0010000 %a[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [pseudo] fsgnjx.s rd, rs, rs
+
+fmv.d %d(freg), %a(freg)
+0010001 %a[4:0] %a[4:0] 000 %d[4:0] 1010011
+# [pseudo] fsgnj.d rd, rs, rs
+
+fneg.d %d(freg), %a(freg)
+0010001 %a[4:0] %a[4:0] 001 %d[4:0] 1010011
+# [pseudo] fsgnjn.d rd, rs, rs
+
+fabs.d %d(freg), %a(freg)
+0010001 %a[4:0] %a[4:0] 010 %d[4:0] 1010011
+# [pseudo] fsgnjx.d rd, rs, rs

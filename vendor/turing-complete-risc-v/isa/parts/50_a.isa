@@ -1,0 +1,351 @@
+lr.w %d(reg), (%a(reg))
+00010 00 00000 %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; reserve (always succeeds on this core)
+
+sc.w %d(reg), %b(reg), (%a(reg))
+00011 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] mem32[rs1] = rs2; rd = 0 (success)
+
+amoswap.w %d(reg), %b(reg), (%a(reg))
+00001 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoadd.w %d(reg), %b(reg), (%a(reg))
+00000 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoxor.w %d(reg), %b(reg), (%a(reg))
+00100 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoand.w %d(reg), %b(reg), (%a(reg))
+01100 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoor.w %d(reg), %b(reg), (%a(reg))
+01000 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomin.w %d(reg), %b(reg), (%a(reg))
+10000 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomax.w %d(reg), %b(reg), (%a(reg))
+10100 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amominu.w %d(reg), %b(reg), (%a(reg))
+11000 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomaxu.w %d(reg), %b(reg), (%a(reg))
+11100 00 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+lr.w.aq %d(reg), (%a(reg))
+00010 10 00000 %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; reserve (always succeeds on this core)
+
+sc.w.aq %d(reg), %b(reg), (%a(reg))
+00011 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] mem32[rs1] = rs2; rd = 0 (success)
+
+amoswap.w.aq %d(reg), %b(reg), (%a(reg))
+00001 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoadd.w.aq %d(reg), %b(reg), (%a(reg))
+00000 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoxor.w.aq %d(reg), %b(reg), (%a(reg))
+00100 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoand.w.aq %d(reg), %b(reg), (%a(reg))
+01100 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoor.w.aq %d(reg), %b(reg), (%a(reg))
+01000 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomin.w.aq %d(reg), %b(reg), (%a(reg))
+10000 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomax.w.aq %d(reg), %b(reg), (%a(reg))
+10100 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amominu.w.aq %d(reg), %b(reg), (%a(reg))
+11000 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomaxu.w.aq %d(reg), %b(reg), (%a(reg))
+11100 10 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+lr.w.rl %d(reg), (%a(reg))
+00010 01 00000 %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; reserve (always succeeds on this core)
+
+sc.w.rl %d(reg), %b(reg), (%a(reg))
+00011 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] mem32[rs1] = rs2; rd = 0 (success)
+
+amoswap.w.rl %d(reg), %b(reg), (%a(reg))
+00001 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoadd.w.rl %d(reg), %b(reg), (%a(reg))
+00000 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoxor.w.rl %d(reg), %b(reg), (%a(reg))
+00100 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoand.w.rl %d(reg), %b(reg), (%a(reg))
+01100 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoor.w.rl %d(reg), %b(reg), (%a(reg))
+01000 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomin.w.rl %d(reg), %b(reg), (%a(reg))
+10000 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomax.w.rl %d(reg), %b(reg), (%a(reg))
+10100 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amominu.w.rl %d(reg), %b(reg), (%a(reg))
+11000 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomaxu.w.rl %d(reg), %b(reg), (%a(reg))
+11100 01 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+lr.w.aqrl %d(reg), (%a(reg))
+00010 11 00000 %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; reserve (always succeeds on this core)
+
+sc.w.aqrl %d(reg), %b(reg), (%a(reg))
+00011 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] mem32[rs1] = rs2; rd = 0 (success)
+
+amoswap.w.aqrl %d(reg), %b(reg), (%a(reg))
+00001 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoadd.w.aqrl %d(reg), %b(reg), (%a(reg))
+00000 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoxor.w.aqrl %d(reg), %b(reg), (%a(reg))
+00100 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoand.w.aqrl %d(reg), %b(reg), (%a(reg))
+01100 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amoor.w.aqrl %d(reg), %b(reg), (%a(reg))
+01000 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomin.w.aqrl %d(reg), %b(reg), (%a(reg))
+10000 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomax.w.aqrl %d(reg), %b(reg), (%a(reg))
+10100 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amominu.w.aqrl %d(reg), %b(reg), (%a(reg))
+11000 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+amomaxu.w.aqrl %d(reg), %b(reg), (%a(reg))
+11100 11 %b[4:0] %a[4:0] 010 %d[4:0] 0101111
+# [A] rd = mem32[rs1]; mem32[rs1] = op(rd, rs2)
+
+lr.d %d(reg), (%a(reg))
+00010 00 00000 %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; reserve (always succeeds on this core)
+
+sc.d %d(reg), %b(reg), (%a(reg))
+00011 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] mem64[rs1] = rs2; rd = 0 (success)
+
+amoswap.d %d(reg), %b(reg), (%a(reg))
+00001 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoadd.d %d(reg), %b(reg), (%a(reg))
+00000 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoxor.d %d(reg), %b(reg), (%a(reg))
+00100 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoand.d %d(reg), %b(reg), (%a(reg))
+01100 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoor.d %d(reg), %b(reg), (%a(reg))
+01000 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomin.d %d(reg), %b(reg), (%a(reg))
+10000 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomax.d %d(reg), %b(reg), (%a(reg))
+10100 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amominu.d %d(reg), %b(reg), (%a(reg))
+11000 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomaxu.d %d(reg), %b(reg), (%a(reg))
+11100 00 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+lr.d.aq %d(reg), (%a(reg))
+00010 10 00000 %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; reserve (always succeeds on this core)
+
+sc.d.aq %d(reg), %b(reg), (%a(reg))
+00011 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] mem64[rs1] = rs2; rd = 0 (success)
+
+amoswap.d.aq %d(reg), %b(reg), (%a(reg))
+00001 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoadd.d.aq %d(reg), %b(reg), (%a(reg))
+00000 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoxor.d.aq %d(reg), %b(reg), (%a(reg))
+00100 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoand.d.aq %d(reg), %b(reg), (%a(reg))
+01100 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoor.d.aq %d(reg), %b(reg), (%a(reg))
+01000 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomin.d.aq %d(reg), %b(reg), (%a(reg))
+10000 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomax.d.aq %d(reg), %b(reg), (%a(reg))
+10100 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amominu.d.aq %d(reg), %b(reg), (%a(reg))
+11000 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomaxu.d.aq %d(reg), %b(reg), (%a(reg))
+11100 10 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+lr.d.rl %d(reg), (%a(reg))
+00010 01 00000 %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; reserve (always succeeds on this core)
+
+sc.d.rl %d(reg), %b(reg), (%a(reg))
+00011 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] mem64[rs1] = rs2; rd = 0 (success)
+
+amoswap.d.rl %d(reg), %b(reg), (%a(reg))
+00001 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoadd.d.rl %d(reg), %b(reg), (%a(reg))
+00000 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoxor.d.rl %d(reg), %b(reg), (%a(reg))
+00100 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoand.d.rl %d(reg), %b(reg), (%a(reg))
+01100 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoor.d.rl %d(reg), %b(reg), (%a(reg))
+01000 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomin.d.rl %d(reg), %b(reg), (%a(reg))
+10000 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomax.d.rl %d(reg), %b(reg), (%a(reg))
+10100 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amominu.d.rl %d(reg), %b(reg), (%a(reg))
+11000 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomaxu.d.rl %d(reg), %b(reg), (%a(reg))
+11100 01 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+lr.d.aqrl %d(reg), (%a(reg))
+00010 11 00000 %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; reserve (always succeeds on this core)
+
+sc.d.aqrl %d(reg), %b(reg), (%a(reg))
+00011 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] mem64[rs1] = rs2; rd = 0 (success)
+
+amoswap.d.aqrl %d(reg), %b(reg), (%a(reg))
+00001 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoadd.d.aqrl %d(reg), %b(reg), (%a(reg))
+00000 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoxor.d.aqrl %d(reg), %b(reg), (%a(reg))
+00100 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoand.d.aqrl %d(reg), %b(reg), (%a(reg))
+01100 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amoor.d.aqrl %d(reg), %b(reg), (%a(reg))
+01000 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomin.d.aqrl %d(reg), %b(reg), (%a(reg))
+10000 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomax.d.aqrl %d(reg), %b(reg), (%a(reg))
+10100 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amominu.d.aqrl %d(reg), %b(reg), (%a(reg))
+11000 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)
+
+amomaxu.d.aqrl %d(reg), %b(reg), (%a(reg))
+11100 11 %b[4:0] %a[4:0] 011 %d[4:0] 0101111
+# [A] rd = mem64[rs1]; mem64[rs1] = op(rd, rs2)

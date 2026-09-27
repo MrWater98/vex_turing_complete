@@ -1,0 +1,26 @@
+li32 %d(reg), %i:S33(immediate)
+%h = (%i + 2048) >> 12
+assert(%i >= -2147483648, "li32: value out of 32-bit range")
+%h[19:0] %d[4:0] 0110111 %i[11:0] %d[4:0] 000 %d[4:0] 0011011
+# [pseudo(2)] rd = sext32(imm)  (lui rd, hi; addiw rd, rd, lo)  EXPERIMENTAL 8-byte line
+
+la %d(reg), %t:U32(immediate | label)
+%o = %t - $start
+%h = (%o + 2048) >> 12
+assert(%o >= -2147483648 && %o <= 2147483647, "la: target out of +-2 GiB range")
+%h[19:0] %d[4:0] 0010111 %o[11:0] %d[4:0] 000 %d[4:0] 0010011
+# [pseudo(2)] rd = address of target  (auipc rd, hi; addi rd, rd, lo)  EXPERIMENTAL
+
+call %t:U32(immediate | label)
+%o = %t - $start
+%h = (%o + 2048) >> 12
+assert(%o >= -2147483648 && %o <= 2147483647, "call: target out of +-2 GiB range")
+%h[19:0] 00001 0010111 %o[11:0] 00001 000 00001 1100111
+# [pseudo(2)] x1 = pc + 8; pc = target  (auipc x1, hi; jalr x1, lo(x1))  EXPERIMENTAL
+
+tail %t:U32(immediate | label)
+%o = %t - $start
+%h = (%o + 2048) >> 12
+assert(%o >= -2147483648 && %o <= 2147483647, "tail: target out of +-2 GiB range")
+%h[19:0] 00110 0010111 %o[11:0] 00110 000 00000 1100111
+# [pseudo(2)] pc = target via x6  (auipc x6, hi; jalr x0, lo(x6))  EXPERIMENTAL

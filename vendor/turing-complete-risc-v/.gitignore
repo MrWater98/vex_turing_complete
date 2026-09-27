@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# 将游戏导出的电路和截图放在 components/<模块>/ 中，不要复制整个存档目录
+schematics/
+
+# 工作文件
+work/
+*.tmp
+
+# 生成的电路（可通过 tools/gen_*.py 重新生成）
+build/
