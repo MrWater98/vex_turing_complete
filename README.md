@@ -32,7 +32,7 @@ The script writes `build/ripple4_add_tc.v` and saves the circuit under `architec
 
 ### RAM running sum demo
 
-Run `python3 scripts/gen_tcgen_adder_ram_demo.py` to build an architecture that repeatedly reads RAM values `3`, `5`, `7`, and `11` and accumulates them. The total changes as `3, 8, 15, 26, ...`. The load port is positioned from the RAM edge so it attaches correctly. See [RAM demo notes](docs/ram-demo.md) for WSL installation and the circuit details.
+Run `python3 scripts/gen_tcgen_adder_ram_demo.py` to build an architecture that repeatedly reads RAM values `3`, `5`, `7`, and `11` and accumulates them. The total changes as `3, 8, 15, 26, ...`. The load port is positioned from the RAM edge so it attaches correctly. See [RAM demo notes](docs/ram-demo.md) for WSL installation and the circuit details. The [circuit-building guide](docs/circuit-building.md) records the pin, RAM placement, wiring, and game-checking steps learned from this example.
 
 To convert another design, pass its file and optional top module:
 
@@ -76,7 +76,7 @@ TC_LEVEL=architecture TC_SAVE_NAME=test scripts/vex-to-tc.sh examples/ripple4_ad
 
 ### RAM 累加演示
 
-运行 `python3 scripts/gen_tcgen_adder_ram_demo.py`，生成循环读取 RAM 中 `3、5、7、11` 并逐步累加的电路，总和依次为 `3、8、15、26……`。读口位置根据 RAM 边缘计算，确保两者贴合。WSL 安装命令与电路说明见 [RAM 演示记录](docs/ram-demo.md)。
+运行 `python3 scripts/gen_tcgen_adder_ram_demo.py`，生成循环读取 RAM 中 `3、5、7、11` 并逐步累加的电路，总和依次为 `3、8、15、26……`。读口位置根据 RAM 边缘计算，确保两者贴合。WSL 安装命令与电路说明见 [RAM 演示记录](docs/ram-demo.md)；引脚、RAM 贴合、布线和游戏内检查步骤见 [电路搭建指南](docs/circuit-building.md)。
 
 转换其他设计时传入 Verilog 路径和可选的顶层模块名：
 
