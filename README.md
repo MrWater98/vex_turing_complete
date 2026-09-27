@@ -30,9 +30,9 @@ TC_LEVEL=architecture TC_SAVE_NAME=test scripts/vex-to-tc.sh examples/ripple4_ad
 
 The script writes `build/ripple4_add_tc.v` and saves the circuit under `architecture/test`. Open **Architecture → test** in Turing Complete. `TC_SCHEMATICS_DIR` points to the game's `schematics` folder; omit it on systems where the interface can find the save directory automatically. The default level is `component_factory`, and the default save name is the Verilog filename.
 
-### RAM sum demo
+### RAM running sum demo
 
-Run `python3 scripts/gen_tcgen_adder_ram_demo.py` to build an architecture that reads RAM values `3`, `5`, and `7` and displays their sum, `15`. The RAM data comes from the included `spec.isa` and assembly program. See [RAM demo notes](docs/ram-demo.md) for the WSL installation commands and circuit details.
+Run `python3 scripts/gen_tcgen_adder_ram_demo.py` to build an architecture that repeatedly reads RAM values `3`, `5`, `7`, and `11` and accumulates them. The total changes as `3, 8, 15, 26, ...`. The load port is positioned from the RAM edge so it attaches correctly. See [RAM demo notes](docs/ram-demo.md) for WSL installation and the circuit details.
 
 To convert another design, pass its file and optional top module:
 
@@ -74,9 +74,9 @@ TC_LEVEL=architecture TC_SAVE_NAME=test scripts/vex-to-tc.sh examples/ripple4_ad
 
 脚本会生成 `build/ripple4_add_tc.v`，并将电路保存到 `architecture/test`。在游戏中打开 **Architecture → test**。`TC_SCHEMATICS_DIR` 指向游戏的 `schematics` 目录；如果接口能自动找到存档目录，可以省略它。默认关卡是 `component_factory`，默认存档名是 Verilog 文件名。
 
-### RAM 求和演示
+### RAM 累加演示
 
-运行 `python3 scripts/gen_tcgen_adder_ram_demo.py`，生成读取 RAM 中 `3、5、7` 并显示总和 `15` 的电路。RAM 数据来自随项目提供的 `spec.isa` 和汇编程序。WSL 安装命令与电路说明见 [RAM 演示记录](docs/ram-demo.md)。
+运行 `python3 scripts/gen_tcgen_adder_ram_demo.py`，生成循环读取 RAM 中 `3、5、7、11` 并逐步累加的电路，总和依次为 `3、8、15、26……`。读口位置根据 RAM 边缘计算，确保两者贴合。WSL 安装命令与电路说明见 [RAM 演示记录](docs/ram-demo.md)。
 
 转换其他设计时传入 Verilog 路径和可选的顶层模块名：
 
